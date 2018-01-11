@@ -66,7 +66,7 @@ private:
 		if (x == nullptr) return 0;
 		return size(x->left) + size(x->right) + 1;
 	}
-	void rotate_right(avl_tree_node <T> * rotation_root) {
+	avl_tree_node <T> * rotate_right(avl_tree_node <T> * rotation_root) {
 		avl_tree_node <T> * new_root = rotation_root->left;
 		avl_tree_node <T> * orphan_subtree = new_root->right;
 
@@ -89,10 +89,12 @@ private:
 		new_root->parent = rotation_root->parent;
 		rotation_root->parent = new_root;
 
-		set_height(rotation_root);
-		set_height(new_root);
+		setBalance(rotation_root);
+		setBalance(new_root);
+
+		return new_root;
 	}
-	void rotate_left(avl_tree_node <T> * rotation_root) {
+	avl_tree_node <T> * rotate_left(avl_tree_node <T> * rotation_root) {
 		avl_tree_node <T> * new_root = rotation_root->right;
 		avl_tree_node <T> * orphan_subtree = new_root->left;
 
@@ -114,6 +116,22 @@ private:
 		}
 		new_root->parent = rotation_root->parent;
 		rotation_root->parent = new_root;
+
+		
+
+		setBalance(rotation_root);
+		setBalance(new_root);
+		return new_root;
+	}
+	avl_tree_node <T>* rotate_left_then_right(avl_tree_node <T> *n)
+	{
+		n->left = rotate_left(n->left);
+		return rotate_right(n);
+	}
+	avl_tree_node <T>* rotate_right_then_left(avl_tree_node <T> *n)
+	{
+		n->right = rotate_right(n->right);
+		return rotate_left(n);
 	}
 	 avl_tree_node <T> * insert(
 		avl_tree_node <T> * current,
@@ -148,15 +166,15 @@ private:
 
 		current->balance_factor = (height(current->right) - height(current->left));
 
-		// Rotate right
+		
 		if (current->balance_factor == -2) {
-			// If left subtree is right heavy -- "double right"
+			
 			if (current->left->balance_factor == 1) {
 				rotate_left(current->left);
 			}
 			rotate_right(current);
 		}
-		// Rotate left
+		
 		else if (current->balance_factor == 2) {
 			// If right subtree is left heavy -- "double left"
 			if (current->right->balance_factor == -1) {
@@ -173,39 +191,30 @@ private:
 		clear(x->right);
 		delete x;
 	}
-	avl_tree_node <T> *Balance(avl_tree_node <T> *x)
+		avl_tree_node <T> *rebalance(avl_tree_node <T> *n)
 	{
-		height(x);
-		if (x->balance_factor == 2)
-		{
-			if (x->right->balance_factor<0)  rotate_right(x->right);
-			rotate_left(x);
+		setBalance(n);
+		 if (n->balance_factor == 2) {
+			if (height(n->right->right) >= height(n->right->left))
+				n = rotate_left(n);
+			else
+				n = rotate_right_then_left(n);
 		}
-		if (x->balance_factor == -2)
-		{
-			if (x->left->balance_factor>0) rotate_left(x->left);
-			rotate_right(x);
+		if (n->balance_factor == -2) {
+			if (height(n->left->left) >= height(n->left->right))
+				n = rotate_right(n);
+			else
+				n = rotate_left_then_right(n);
 		}
-		return x;
+		if (n->parent != nullptr) {
+			rebalance(n->parent);
+		}
+		else {
+			root = n;
+		}
+
+		return n;
 	}
-	/* avl_tree_node <T> * Balance(avl_tree_node <T> *x) {
-		height(x);
-
-		if (x->left->height > x->right->height + 1) {
-			if (x->left->right->height > x->left->left->height) {
-				x->left = RotateRight(x->left);
-			}
-			 RotateLeft(x);
-		}
-		else if (x->right->height > x->left->height + 1) {
-			if (x->right->left->height > x->right->right->height) {
-				x->right = RotateLeft(x->right);
-			}
-			 RotateRight(x);
-		}
-
-		return x;
-	}*/
 
 
 
@@ -229,7 +238,7 @@ private:
 				for (t = temp->right; t->left != nullptr; t = t->left);
 				temp->key = t->key;
 				temp->right = remove(temp->right, t->key);
-				return Balance(temp);
+				return rebalance(temp);
 			}
 		}
 		if (key < temp->key) {
@@ -239,7 +248,7 @@ private:
 			temp->right = remove(temp->right, key);
 		}
 
-		return Balance(temp);
+		return rebalance(temp);
 	}
 public:
 	avl_tree() {
@@ -335,6 +344,9 @@ public:
 			x->height = (get_height(x->left) > get_height(x->right) ? get_height(x->left) : get_height(x->right)) + 1;
 		}
 
+	void setBalance(avl_tree_node <T> *x) {
+		x->balance_factor = height(x->right) - height(x->left);
+	}
 	
 
 };

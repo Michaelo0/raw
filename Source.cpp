@@ -5,7 +5,6 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
-#include "tests.h"
 
 
 #define ok "CORRECT"
@@ -103,7 +102,7 @@ int main(int argc, char *argv[]) {
 	aa_tree<int> aatree;
 
 	srand(time(0));
-	clock_t c1 = clock();
+	clock_t c3 = clock();
 	while (getline(fileIN, line)) {
 		if (line.find("delete") == 0) {
 			if (lineisok(line, "delete")) {
@@ -153,9 +152,9 @@ int main(int argc, char *argv[]) {
 			fileOut << "error" << endl;
 		}
 	}
-	clock_t c2 = clock();
-	clock_t res = c2 - c1;
-	cout << "runtime = " << res / CLOCKS_PER_SEC << endl;
+	clock_t c4 = clock();
+	clock_t res2 = c4 - c3;
+	cout << "runtime = " << res2 / CLOCKS_PER_SEC << endl;
 
 	ofstream correct_avl_out("avl.txt", ios::out);
 	ofstream correct_aa_out("aa.txt", ios::out);
