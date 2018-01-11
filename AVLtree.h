@@ -291,18 +291,18 @@ public:
 		return false;
 	}
 	
-	 avl_tree_node <T> *minimum() {
+	 T minimum() {
 		avl_tree_node <T> *x = root;
-		if (x == nullptr) return nullptr;
+		if (x == nullptr) return 0;
 		while (x->left != nullptr) x = x->left;
-		return x;
+		return x->key;
 	}
 	
-	 avl_tree_node <T> *maximum() {
+	 T maximum() {
 		avl_tree_node <T> *x = root;
-		if (x == nullptr) return nullptr;
+		if (x == nullptr) return 0;
 		while (x->right != nullptr) x = x->right;
-		return x;
+		return x->key;
 	}
 	
 	unsigned long long height() {
@@ -334,5 +334,7 @@ public:
 			
 			x->height = (get_height(x->left) > get_height(x->right) ? get_height(x->left) : get_height(x->right)) + 1;
 		}
+
+	
 
 };

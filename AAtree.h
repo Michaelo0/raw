@@ -75,6 +75,11 @@ class aa_tree {
 		delete x;
 	}
 
+	unsigned long long height(aa_tree_node <T> *x) {
+		if (x == nullptr) return 0;
+		return std::max(height(x->left), height(x->right)) + 1;
+	}
+
 	void skew(aa_tree_node<T> *node)
 	{
 		aa_tree_node<T> *left = node->left;
@@ -189,22 +194,18 @@ public:
 	bool Delete(T key) {
 		return this->DeleteHelper(nullptr, root, key);
 	}
-	T min() {
-		aa_tree_node<T> *N = root;
-		while (N->left != nullptr) {
-			N = N->left;
-		}
-		return N->value;
+	T minimum() {
+		aa_tree_node <T> *x = root;
+		if (x == nullptr) return 0;
+		while (x->left != nullptr) x = x->left;
+		return x->key;
 	}
 
-	
-	
-	T max() {
-		aa_tree_node<T> *N = root;
-		while (N->right != nullptr) {
-			N = N->right;
-		}
-		return N->value;
+	T maximum() {
+		aa_tree_node <T> *x = root;
+		if (x == nullptr) return 0;
+		while (x->right != nullptr) x = x->right;
+		return x->key;
 	}
 
 	aa_tree_node <T> *search(T key) {
@@ -233,6 +234,20 @@ public:
 
 	void post_order_traversal(std::ostream &ostream) {
 		post_order_traversal(ostream, root);
+	}
+
+	bool empty() {
+		if (root == nullptr) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	
+	unsigned long long height() {
+		return height(root);
 	}
 };
 
