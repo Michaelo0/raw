@@ -27,16 +27,16 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 	
-	std::string line;
-	std::ifstream fileIN(argv[1]);
+	string line;
+	ifstream fileIN(argv[1]);
 	assert(fileIN);
-	std::ofstream fileOut(argv[2]);
+	ofstream fileOut(argv[2]);
 	assert(fileOut);
 
 	avl_tree<int> avl_tree;
 
 	srand(time(0));
-
+	clock_t c1 = clock();
 	while (getline(fileIN, line)) {
 		if (line.find("delete") == 0) {
 			if (lineisok(line, "delete")) {
@@ -87,8 +87,9 @@ int main(int argc, char *argv[]) {
 			fileOut << "error" << endl;
 		}
 	}
-
-	cout << "runtime = " << clock() / 1000.0 << endl;
+	clock_t c2 = clock();
+	clock_t res = c2 - c1;
+	cout << "runtime = " << res / CLOCKS_PER_SEC << endl;
 
 	
 
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
 	aa_tree<int> aatree;
 
 	srand(time(0));
-
+	clock_t c1 = clock();
 	while (getline(fileIN, line)) {
 		if (line.find("delete") == 0) {
 			if (lineisok(line, "delete")) {
@@ -152,12 +153,12 @@ int main(int argc, char *argv[]) {
 			fileOut << "error" << endl;
 		}
 	}
+	clock_t c2 = clock();
+	clock_t res = c2 - c1;
+	cout << "runtime = " << res / CLOCKS_PER_SEC << endl;
 
-	cout << "runtime = " << clock() / 1000.0 << endl;
-
-
-	std::ofstream correct_avl_out("avl.txt", std::ios::out);
-	std::ofstream correct_aa_out("aa.txt", std::ios::out);
+	ofstream correct_avl_out("avl.txt", ios::out);
+	ofstream correct_aa_out("aa.txt", ios::out);
 	avl_check(correct_avl_out);
 	aa_check(correct_aa_out);
 
