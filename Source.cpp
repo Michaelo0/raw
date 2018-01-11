@@ -1,5 +1,5 @@
-#include "aatree.h"
-#include "avltree.h"
+#include "AAtree.h"
+#include "AVLtree.h"
 #include <iostream>
 #include <cassert>
 #include <sstream>

@@ -27,7 +27,7 @@ template <class T>
 class aa_tree {
 	aa_tree_node<T> *root;
 
-	aa_tree_node<T> *aa_tree<T>::insertRecursive(aa_tree_node<T> *temp, aa_tree_node<T> *ins) {
+	aa_tree_node<T> *insertRecursive(aa_tree_node<T> *temp, aa_tree_node<T> *ins) {
 		if (root == nullptr) {
 			root = ins;
 			ins->count = 1;
