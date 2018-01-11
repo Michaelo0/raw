@@ -10,8 +10,8 @@ template <typename T>
 struct avl_tree_node {
 	T key;     ///< The key of the node
 	T value; ///< The value of the node
-	int height;
-	int balance_factor; ///< The avl tree balance factor of this node
+	unsigned long long height;
+	unsigned long long balance_factor; ///< The avl tree balance factor of this node
 	avl_tree_node *parent;  ///< A pointer to the parent of the node
 	avl_tree_node *left;    ///< A pointer to the left child of the node
 	avl_tree_node *right;   ///< A pointer to the right child of the node
@@ -23,56 +23,38 @@ struct avl_tree_node {
 		this->parent = nullptr;
 		this->left = nullptr;
 		this->right = nullptr;
-		int height = 1;
-		int balance_factor = 1;
+		unsigned long long height = 1;
+		unsigned long long balance_factor = 1;
 	}
 
-	void info()  {
-		std::cout << this->key << "\t";
-		if (this->left != nullptr) {
-			std::cout << this->left->key << "\t";
-		}
-		else {
-			std::cout << "null" << "\t";
-		}
-		if (this->right != nullptr) {
-			std::cout << this->right->key << "\t";
-		}
-		else {
-			std::cout << "null" << "\t";
-		}
-		if (this->parent != nullptr) {
-			std::cout << this->parent->key << std::endl;
-		}
-		else {
-			std::cout << "null" << std::endl;
-		}
+	void info(std::ostream &ostream)  {
+		ostream << this->value << " ";
+		ostream << "Key: " << this->key << " Value: " << this->value << std::endl;
 	}
 };
 template <typename T>
 class avl_tree {
 private:
 	avl_tree_node <T> *root;
-	void pre_order_traversal(avl_tree_node <T> *x) {
-		if (x == nullptr) return;
-		x->info();
+	void pre_order_traversal(std::ostream &ostream, avl_tree_node<T> *x) {
+		if (!x) return;
+		x->info(ostream);
 		pre_order_traversal(x->left);
 		pre_order_traversal(x->right);
 	}
-	void in_order_traversal(std::ostream &ostream, avl_tree_node<T> *temp) {
-		if (!temp) {
+	void in_order_traversal(std::ostream &ostream, avl_tree_node<T> *x) {
+		if (!x) {
 			return;
 		}
-		in_order_traversal(ostream, temp->left);
-		ostream << temp->value << " ";
-		ostream << "Key: " << temp->key << " Value: " << temp->value << std::endl;
-		in_order_traversal(ostream, temp->right);
+		in_order_traversal(ostream, x->left);
+		x->info(ostream);
+		in_order_traversal(ostream, x->right);
 	}
-	void post_order_traversal(avl_tree_node <T> *x) {
+	void post_order_traversal(std::ostream &ostream, avl_tree_node<T> *x) {
 		if (x == nullptr) return;
 		post_order_traversal(x->left);
 		post_order_traversal(x->right);
-		x->info();
+		x->info(ostream);
 	}
 	
 	unsigned long long height(avl_tree_node <T> *x) {
@@ -83,27 +65,6 @@ private:
 	unsigned long long size(avl_tree_node <T> *x) {
 		if (x == nullptr) return 0;
 		return size(x->left) + size(x->right) + 1;
-	}
-	void graphviz(std::ofstream &file, avl_tree_node <T> *x, unsigned long long *count) {
-		if (x == nullptr) return;
-		graphviz(file, x->left, count);
-		if (x->left != nullptr) {
-			file << "\t" << x->key << " -> " << x->left->key << ";" << std::endl;
-		}
-		else {
-			file << "\t" << "null" << *count << " " << "[shape=point]" << ";" << std::endl;
-			file << "\t" << x->key << " -> " << "null" << *count << ";" << std::endl;
-			(*count)++;
-		}
-		if (x->right != nullptr) {
-			file << "\t" << x->key << " -> " << x->right->key << ";" << std::endl;
-		}
-		else {
-			file << "\t" << "null" << *count << " " << "[shape=point]" << ";" << std::endl;
-			file << "\t" << x->key << " -> " << "null" << *count << ";" << std::endl;
-			(*count)++;
-		}
-		graphviz(file, x->right, count);
 	}
 	void rotate_right(avl_tree_node <T> * rotation_root) {
 		avl_tree_node <T> * new_root = rotation_root->left;
@@ -300,9 +261,6 @@ public:
 		post_order_traversal(ostream,root);
 	}
 	
-	void breadth_first_traversal() {
-		breadth_first_traversal(root);
-	}
 
 	 avl_tree_node <T> * insert(T key, T value) {
 		return insert(root, nullptr, key, value);
@@ -365,7 +323,7 @@ public:
 		}
 	}
 	
-	int get_height(avl_tree_node <T> * x)
+	unsigned long long get_height(avl_tree_node <T> * x)
 		{
 			if (x) return x->height;	
 			return 0;

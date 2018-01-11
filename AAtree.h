@@ -6,7 +6,7 @@ struct aa_tree_node {
 	aa_tree_node *right;
 	aa_tree_node *left;
 	aa_tree_node *parent;
-	int count, level;
+	unsigned long long count, level;
 	T key;
 	T value;
 
@@ -16,11 +16,14 @@ struct aa_tree_node {
 		this->parent = nullptr;
 		this->left = nullptr;
 		this->right = nullptr;
-		int count = 0;
-		int level = 1;
+		unsigned long long count = 0;
+		unsigned long long level = 1;
 	}
-	int Level() { return this ? level : -1; }
-
+	unsigned long long Level() { return this ? level : -1; }
+	void info(std::ostream &ostream) {
+		ostream << this->value << " ";
+		ostream << "Key: " << this->key << " Value: " << this->value << std::endl;
+	}
 };
 
 template <class T>
@@ -99,14 +102,25 @@ class aa_tree {
 			}
 		}
 	}
-	void print(std::ostream &ostream, aa_tree_node<T> *temp) {
-		if (!temp) {
+	void pre_order_traversal(std::ostream &ostream, aa_tree_node<T> *x) {
+		if (!x) return;
+		x->info(ostream);
+		pre_order_traversal(x->left);
+		pre_order_traversal(x->right);
+	}
+	void in_order_traversal(std::ostream &ostream, aa_tree_node<T> *x) {
+		if (!x) {
 			return;
 		}
-		print(ostream, temp->left);
-		ostream << temp->value << " ";
-		ostream << "Key: " << temp->key << " Value: " << temp->value << std::endl;
-		print(ostream, temp->right);
+		in_order_traversal(ostream, x->left);
+		x->info(ostream);
+		in_order_traversal(ostream, x->right);
+	}
+	void post_order_traversal(std::ostream &ostream, aa_tree_node<T> *x) {
+		if (x == nullptr) return;
+		post_order_traversal(x->left);
+		post_order_traversal(x->right);
+		x->info(ostream);
 	}
 
 	bool split(aa_tree_node<T> *node)
@@ -208,8 +222,17 @@ public:
 		}
 		return nullptr;
 	}
+
+	void pre_order_traversal(std::ostream &ostream) {
+		pre_order_traversal(ostream, root);
+	}
+
 	void in_order_traversal(std::ostream &ostream) {
-		print(ostream, root);
+		in_order_traversal(ostream, root);
+	}
+
+	void post_order_traversal(std::ostream &ostream) {
+		post_order_traversal(ostream, root);
 	}
 };
 
