@@ -6,9 +6,9 @@ struct aa_tree_node {
 	aa_tree_node *right;
 	aa_tree_node *left;
 	aa_tree_node *parent;
-	unsigned long long count, level;
 	T key;
 	T value;
+	unsigned long long  level;
 
 	aa_tree_node(T key, T value) {
 		this->key = key;
@@ -16,7 +16,6 @@ struct aa_tree_node {
 		this->parent = nullptr;
 		this->left = nullptr;
 		this->right = nullptr;
-		unsigned long long count = 0;
 		unsigned long long level = 1;
 	}
 	unsigned long long Level() { return this ? level : -1; }
@@ -30,38 +29,35 @@ template <class T>
 class aa_tree {
 	aa_tree_node<T> *root;
 
-	aa_tree_node<T> *insertRecursive(aa_tree_node<T> *temp, aa_tree_node<T> *ins) {
+	aa_tree_node<T> *_insert(aa_tree_node<T>* temp, aa_tree_node<T> *ins) {
 		if (root == nullptr) {
-			root = ins;
-			ins->count = 1;
 			ins->parent = nullptr;
 			ins->left = nullptr;
 			ins->right = nullptr;
+			root = ins;
+
 			return root;
 		}
-		if (ins->value <= temp->value && ins->key != temp->key) {
+		if (ins->key < temp->key) {
 			if (temp->left) {
-				return insertRecursive(temp->left, ins);
+				return _insert(temp->left, ins);
 			}
 			temp->left = ins;
 			ins->parent = temp;
-			ins->count = 1;
 			rebal(ins);
 
 			return ins;
 		}
-		if (ins->value > temp->value || ins->key != temp->key) {
+		if (ins->key > temp->key) {
 			if (temp->right) {
-				return insertRecursive(temp->right, ins);
+				return _insert(temp->right, ins);
 			}
 			temp->right = ins;
 			ins->parent = temp;
-			ins->count = 1;
 			rebal(ins);
 
 			return ins;
 		}
-		temp->count++;
 
 		delete ins;
 		return temp;
@@ -74,7 +70,6 @@ class aa_tree {
 		clear(x->right);
 		delete x;
 	}
-
 	unsigned long long height(aa_tree_node <T> *x) {
 		if (x == nullptr) return 0;
 		return std::max(height(x->left), height(x->right)) + 1;
@@ -82,26 +77,36 @@ class aa_tree {
 
 	void skew(aa_tree_node<T> *node)
 	{
-		aa_tree_node<T> *left = node->left;
-		if (left && left->level == node->level) node->left = left->right, left->right = node, node = left;
+		aa_tree_node<T> *ptr = node->left;
+		if (node->parent->left == node)
+			node->parent->left = ptr;
+		else
+			node->parent->right = ptr;
+		ptr->parent = node->parent;
+		node->parent = ptr;
+		node->left = ptr->right;
+		if (node->left != nullptr)
+			node->left->parent = node;
+		node->right = node;
+		node->level = (node->left ? node->left->level + 1 : 1);
 
 	}
-	void rebal(aa_tree_node<T> *temp) {
-		temp->left = nullptr;
-		temp->right = nullptr;
-		temp->level = 1;
-		for (temp = temp->parent; temp != root; temp = temp->parent) {
-			if (temp->level != (temp->left ? temp->left->level + 1 : 1)) {
-				skew(temp);
-				if (temp->right == nullptr) {
-					temp = temp->parent;
+	void rebal(aa_tree_node<T> *node) {
+		node->left = nullptr;
+		node->right = nullptr;
+		node->level = 1;
+		for (node = node->parent; node != root; node = node->parent) {
+			if (node->level != (node->left ? node->left->level + 1 : 1)) {
+				skew(node);
+				if (node->right == nullptr) {
+					node = node->parent;
 				}
-				else if (temp->level != temp->right->level) {
-					temp = temp->parent;
+				else if (node->level != node->right->level) {
+					node = node->parent;
 				}
 			}
-			if (temp->parent != root) {
-				if (!split(temp->parent)) {
+			if (node->parent != root) {
+				if (!split(node->parent)) {
 					break;
 				}
 			}
@@ -130,14 +135,28 @@ class aa_tree {
 
 	bool split(aa_tree_node<T> *node)
 	{
-		aa_tree_node<T> *right = node->right;
-		if (right && right->right->level == node->level) {
-			node->right = right->left, right->left = node, node = right, node->level++;
+		aa_tree_node<T>* ptr = node->right;
+		if (ptr && ptr->right && (ptr->right->level == node->level)) {
+			if (node->parent->left == node) {
+				node->parent->left = ptr;
+			}
+			else {
+				node->parent->right = ptr;
+			}
+			ptr->parent = node->parent;
+			node->parent = ptr;
+			node->right = ptr->left;
+			if (node->right != nullptr) {
+				node->right->parent = node;
+			}
+			ptr->left = node;
+			ptr->level = node->level + 1;
 			return true;
-		}return false;
+		}
+		return false;
 	}
 
-	bool DeleteHelper(aa_tree_node<T> *parent, aa_tree_node<T> *current, T key) {
+	bool _remove(aa_tree_node<T> *parent, aa_tree_node<T> *current, T key) {
 		if (!current) {
 			return false;
 		}
@@ -167,13 +186,13 @@ class aa_tree {
 				T temp = current->key;
 				current->key = validSubs->key;
 				validSubs->key = temp;
-				return DeleteHelper(current, current->right, temp);
+				return _remove(current, current->right, temp);
 			}
 			delete current;
 			return true;
 		}
-		return DeleteHelper(current, current->left, key) ||
-			DeleteHelper(current, current->right, key);
+		return _remove(current, current->left, key) ||
+			_remove(current, current->right, key);
 	}
 public:
 	aa_tree() {
@@ -186,13 +205,13 @@ public:
 	}
 
 
-	T insert(T key, T value) {
-		aa_tree_node<T> *temp = new aa_tree_node<T>(key,value);
-		temp = insertRecursive(root, temp);
-		return temp->count;
+	void insert(T key, T value) {
+		aa_tree_node<T> *node = new aa_tree_node<T>(key,value);
+		node = _insert(root, node);
+		
 	}
-	bool Delete(T key) {
-		return this->DeleteHelper(nullptr, root, key);
+	bool remove(T key) {
+		return this->_remove(nullptr, root, key);
 	}
 	T minimum() {
 		aa_tree_node <T> *x = root;
@@ -252,47 +271,7 @@ public:
 };
 
 
-//template <class T>
-//void aa_tree<T>::skew(aa_tree_node<T> *temp)
-//{
-//	aa_tree_node<T> *ptr = temp->left;
-//	if (temp->parent->left == temp)
-//		temp->parent->left = ptr;
-//	else
-//		temp->parent->right = ptr;
-//	ptr->parent = temp->parent;
-//	temp->parent = ptr;
-//	temp->left = ptr->right;
-//	if (temp->left != nullptr)
-//		temp->left->parent = temp;
-//	ptr->right = temp;
-//	temp->level = (temp->left ? temp->left->level + 1 : 1);
-//}
 
-
-//template <class T>
-//bool aa_tree<T>::split(aa_tree_node<T> *temp)
-//{
-//	aa_tree_node<T>* ptr = temp->right;
-//	if (ptr && ptr->right && (ptr->right->level == temp->level)) {
-//		if (temp->parent->left == temp) {
-//			temp->parent->left = ptr;
-//		}
-//		else {
-//			temp->parent->right = ptr;
-//		}
-//		ptr->parent = temp->parent;
-//		temp->parent = ptr;
-//		temp->right = ptr->left;
-//		if (temp->right != nullptr) {
-//			temp->right->parent = temp;
-//		}
-//		ptr->left = temp;
-//		ptr->level = temp->level + 1;
-//		return true;
-//	}
-//	return false;
-//}
 
 
 

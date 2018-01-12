@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 	}
 	clock_t c2 = clock();
 	clock_t res = c2 - c1;
-	cout << "runtime = " << res / CLOCKS_PER_SEC << endl;
+	cout << "runtime = " << res  << endl;
 
 	
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 	while (getline(fileIN, line)) {
 		if (line.find("delete") == 0) {
 			if (lineisok(line, "delete")) {
-				if (!aatree.Delete(findkey(line))) {
+				if (!aatree.remove(findkey(line))) {
 					fileOut << "error" << endl;
 				}
 				else {
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 	}
 	clock_t c4 = clock();
 	clock_t res2 = c4 - c3;
-	cout << "runtime = " << res2 / CLOCKS_PER_SEC << endl;
+	cout << "runtime = " << res2 << endl;
 
 	ofstream correct_avl_out("avl.txt", ios::out);
 	ofstream correct_aa_out("aa.txt", ios::out);
@@ -306,7 +306,7 @@ void aa_check(ostream &outstr) {
 
 
 	outstr << "Empty test:		";
-	aa->Delete(0);
+	aa->remove(0);
 	(aa->empty()) ? outstr << ok << endl : outstr << err << endl;
 
 
@@ -332,7 +332,7 @@ void aa_check(ostream &outstr) {
 
 
 	outstr << "Removing node test:	";
-	aa->Delete(1);
+	aa->remove(1);
 
 	(!aa->search(1) &&
 		aa->search(16) &&
@@ -342,8 +342,8 @@ void aa_check(ostream &outstr) {
 
 
 	outstr << "Removing leaves test:	";
-	aa->Delete(16);
-	aa->Delete(583);
+	aa->remove(16);
+	aa->remove(583);
 
 	(!aa->search(16) &&
 		aa->search(18) &&
